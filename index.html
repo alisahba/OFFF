@@ -194,8 +194,8 @@ cubes.forEach(c => {
 
 let gamma    = 0;
 let lastMove = 0;
-const COOLDOWN  = 130;
-const THRESHOLD = 9;
+const THRESHOLD      = 9;    // min gamma (°) before rotation starts
+const VELOCITY_SCALE = 0.06; // degrees added to target per frame per degree of gamma
 
 function showSpin(c) {
     c.leavingRest = false;
@@ -226,15 +226,20 @@ function trigger(dir) {
 
 function handleOrientation(e) { gamma = e.gamma || 0; }
 
-function updateTilt() {
-    const now = Date.now();
-    if (now - lastMove < COOLDOWN) return;
-    if      (gamma >  THRESHOLD) trigger( 1);
-    else if (gamma < -THRESHOLD) trigger(-1);
-}
-
 function loop() {
-    updateTilt();
+    // velocity-based rotation: target advances proportionally to tilt angle
+    const deadband = gamma > THRESHOLD  ? gamma - THRESHOLD
+                   : gamma < -THRESHOLD ? gamma + THRESHOLD
+                   : 0;
+
+    if (deadband !== 0) {
+        lastMove = Date.now();
+        cubes.forEach(c => {
+            if (c.atRest) { c.atRest = false; c.leavingRest = true; }
+            c.returning = false;
+            c.target += deadband * VELOCITY_SCALE;
+        });
+    }
 
     const idleMs = Date.now() - lastMove;
 
