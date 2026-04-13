@@ -183,6 +183,7 @@ const cubes = [
     rot:          0,
     target:       0,
     faceIndex:    0,
+    lastFaceStep: 0,
     atRest:       true,
     returning:    false,
     leavingRest:  false,   // true while departing rest before face1 is hidden
@@ -258,6 +259,13 @@ function loop() {
     cubes.forEach(c => {
         c.rot += (c.target - c.rot) * (c.returning ? c.returnLerp : c.lerp);
         c.slot.style.transform = `translateX(-50%) rotateY(${c.rot}deg)`;
+
+        // haptic pulse each time a new face clicks into the front position
+        const faceStep = Math.floor(Math.abs(c.rot) / c.step);
+        if (faceStep !== c.lastFaceStep) {
+            c.lastFaceStep = faceStep;
+            if (navigator.vibrate) navigator.vibrate(8);
+        }
 
         if (c.atRest) return;
 
