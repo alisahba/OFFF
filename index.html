@@ -22,8 +22,6 @@ body {
     width: 100vw;
 }
 
-/* ── START SCREEN ─────────────────────────────── */
-
 #start-screen {
     position: fixed;
     inset: 0;
@@ -45,8 +43,6 @@ body {
     cursor: pointer;
 }
 
-/* ── SCENE ────────────────────────────────────── */
-
 #scene {
     display: none;
     width: 100vw;
@@ -54,8 +50,6 @@ body {
     perspective: 1600px;
     position: relative;
 }
-
-/* ── CUBES ────────────────────────────────────── */
 
 .cube {
     width: var(--s);
@@ -69,8 +63,6 @@ body {
 #cube2 { top: calc(var(--margin) + 1 * (var(--s) + var(--gap))); }
 #cube3 { top: calc(var(--margin) + 2 * (var(--s) + var(--gap))); }
 #cube4 { top: calc(var(--margin) + 3 * (var(--s) + var(--gap))); }
-
-/* ── FACES ────────────────────────────────────── */
 
 .face {
     position: absolute;
@@ -87,65 +79,52 @@ body {
     user-select: none;
 }
 
-/* 2 faces — 180° apart, thin depth */
-/* inradius = s / (2 * tan(π/2)) → degenerate; use a small offset for visual depth */
+/* 2 faces — 180° apart */
 .faces-2 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) * 0.04)); }
 .faces-2 .face:nth-child(2) { transform: rotateY(180deg) translateZ(calc(var(--s) * 0.04)); }
 
-/* 3 faces — 120° apart */
-/* inradius = s / (2 * tan(60°)) ≈ s * 0.289 */
+/* 3 faces — 120° apart  |  inradius ≈ s * 0.289 */
 .faces-3 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) * 0.289)); }
 .faces-3 .face:nth-child(2) { transform: rotateY(120deg) translateZ(calc(var(--s) * 0.289)); }
 .faces-3 .face:nth-child(3) { transform: rotateY(240deg) translateZ(calc(var(--s) * 0.289)); }
 
-/* 4 faces — 90° apart */
-/* inradius = s / 2 */
+/* 4 faces — 90° apart  |  inradius = s / 2 */
 .faces-4 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) / 2)); }
 .faces-4 .face:nth-child(2) { transform: rotateY( 90deg) translateZ(calc(var(--s) / 2)); }
 .faces-4 .face:nth-child(3) { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
 .faces-4 .face:nth-child(4) { transform: rotateY(270deg) translateZ(calc(var(--s) / 2)); }
 
-/* 5 faces — 72° apart */
-/* inradius = s / (2 * tan(36°)) ≈ s * 0.688 */
-.faces-5 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) * 0.688)); }
-.faces-5 .face:nth-child(2) { transform: rotateY( 72deg) translateZ(calc(var(--s) * 0.688)); }
-.faces-5 .face:nth-child(3) { transform: rotateY(144deg) translateZ(calc(var(--s) * 0.688)); }
-.faces-5 .face:nth-child(4) { transform: rotateY(216deg) translateZ(calc(var(--s) * 0.688)); }
-.faces-5 .face:nth-child(5) { transform: rotateY(288deg) translateZ(calc(var(--s) * 0.688)); }
-
 </style>
 </head>
 <body>
 
-<!-- ── START ──────────────────────────────────── -->
 <div id="start-screen">
     <button id="start-btn">Start</button>
 </div>
 
-<!-- ── SCENE ──────────────────────────────────── -->
 <div id="scene">
 
-    <!-- 1 · S E E  (3 faces, 120° step) -->
+    <!-- SEE (3 faces) — face1 rests as O -->
     <div id="cube1" class="cube faces-3">
         <div class="face">S</div>
         <div class="face">E</div>
         <div class="face">E</div>
     </div>
 
-    <!-- 2 · Y O U  (3 faces, 120° step) -->
+    <!-- YOU (3 faces) — face1 rests as F -->
     <div id="cube2" class="cube faces-3">
         <div class="face">Y</div>
         <div class="face">O</div>
         <div class="face">U</div>
     </div>
 
-    <!-- 3 · A T  (2 faces, 180° step) -->
+    <!-- AT (2 faces) — face1 rests as F -->
     <div id="cube3" class="cube faces-2">
         <div class="face">A</div>
         <div class="face">T</div>
     </div>
 
-    <!-- 4 · O F F F  (4 faces, 90° step) -->
+    <!-- OFFF (4 faces) — face1 rests as F -->
     <div id="cube4" class="cube faces-4">
         <div class="face">O</div>
         <div class="face">F</div>
@@ -160,13 +139,25 @@ const btn     = document.getElementById("start-btn");
 const startSc = document.getElementById("start-screen");
 const scene   = document.getElementById("scene");
 
-// each cube: own lerp (settle speed) + own step angle (face count)
+// lerp descends so cube1 (top) settles first, cube4 (bottom) last
 const cubes = [
-    { el: document.getElementById("cube1"), lerp: 0.038, step: 120, rot: 0, target: 0 },
-    { el: document.getElementById("cube2"), lerp: 0.058, step: 120, rot: 0, target: 0 },
-    { el: document.getElementById("cube3"), lerp: 0.072, step: 180, rot: 0, target: 0 },
-    { el: document.getElementById("cube4"), lerp: 0.091, step:  90, rot: 0, target: 0 },
-];
+    { id: "cube1", lerp: 0.075, step: 120, faceCount: 3, rest: "O", spin: "S" },
+    { id: "cube2", lerp: 0.060, step: 120, faceCount: 3, rest: "F", spin: "Y" },
+    { id: "cube3", lerp: 0.048, step: 180, faceCount: 2, rest: "F", spin: "A" },
+    { id: "cube4", lerp: 0.036, step:  90, faceCount: 4, rest: "F", spin: "O" },
+].map(c => ({
+    ...c,
+    el:         document.getElementById(c.id),
+    rot:        0,
+    target:     0,
+    faceIndex:  0,
+}));
+
+// cache face1 ref and set rest letter immediately
+cubes.forEach(c => {
+    c.face1 = c.el.querySelector(".face");
+    c.face1.textContent = c.rest;
+});
 
 let gamma    = 0;
 let lastMove = 0;
@@ -174,13 +165,14 @@ const COOLDOWN  = 130;
 const THRESHOLD = 9;
 
 function trigger(dir) {
-    cubes.forEach(c => { c.target += dir * c.step; });
+    cubes.forEach(c => {
+        c.faceIndex = ((c.faceIndex + dir) % c.faceCount + c.faceCount) % c.faceCount;
+        c.target += dir * c.step;
+    });
     lastMove = Date.now();
 }
 
-function handleOrientation(e) {
-    gamma = e.gamma || 0;
-}
+function handleOrientation(e) { gamma = e.gamma || 0; }
 
 function updateTilt() {
     const now = Date.now();
@@ -191,14 +183,26 @@ function updateTilt() {
 
 function loop() {
     updateTilt();
+
     cubes.forEach(c => {
         c.rot += (c.target - c.rot) * c.lerp;
         c.el.style.transform = `translateX(-50%) rotateY(${c.rot}deg)`;
+
+        // face1 is visible when it faces the viewer (within ±90° of front)
+        const r = ((c.rot % 360) + 360) % 360;
+        const face1Visible = r < 90 || r > 270;
+
+        // only swap text while face1 is hidden — so the correct letter
+        // is already in place by the time the face rotates into view
+        if (!face1Visible) {
+            c.face1.textContent = (c.faceIndex === 0) ? c.rest : c.spin;
+        }
     });
+
     requestAnimationFrame(loop);
 }
 
-// ── touch swipe ───────────────────────────────────
+// touch swipe
 let touchStartX = 0;
 window.addEventListener("touchstart", e => {
     touchStartX = e.touches[0].clientX;
@@ -209,7 +213,7 @@ window.addEventListener("touchend", e => {
     if (Math.abs(dx) > 40) trigger(dx < 0 ? -1 : 1);
 }, { passive: true });
 
-// ── keyboard fallback ─────────────────────────────
+// keyboard fallback
 window.addEventListener("keydown", e => {
     if (scene.style.display === "none") return;
     if (e.key === "ArrowRight") gamma =  15;
@@ -219,7 +223,6 @@ window.addEventListener("keyup", e => {
     if (e.key === "ArrowRight" || e.key === "ArrowLeft") gamma = 0;
 });
 
-// ── start ─────────────────────────────────────────
 btn.onclick = () => {
     const go = () => {
         startSc.style.display = "none";
