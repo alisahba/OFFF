@@ -170,10 +170,10 @@ const scene   = document.getElementById("scene");
 
 // lerp descends: cube1 settles first (top), cube4 last (bottom)
 const cubes = [
-    { lerp: 0.075, step: 120, faceCount: 3 },
-    { lerp: 0.030, step: 120, faceCount: 3 },
-    { lerp: 0.048, step: 180, faceCount: 2 },
-    { lerp: 0.036, step:  90, faceCount: 4 },
+    { lerp: 0.075, returnLerp: 0.22, step: 120, faceCount: 3 },
+    { lerp: 0.030, returnLerp: 0.20, step: 120, faceCount: 3 },
+    { lerp: 0.048, returnLerp: 0.18, step: 180, faceCount: 2 },
+    { lerp: 0.040, returnLerp: 0.22, step:  90, faceCount: 4 },
 ].map((c, i) => ({
     ...c,
     slot:         document.getElementById(`slot${i + 1}`),
@@ -255,7 +255,7 @@ function loop() {
     const idleMs = Date.now() - lastMove;
 
     cubes.forEach(c => {
-        c.rot += (c.target - c.rot) * c.lerp;
+        c.rot += (c.target - c.rot) * (c.returning ? c.returnLerp : c.lerp);
         c.slot.style.transform = `translateX(-50%) rotateY(${c.rot}deg)`;
 
         if (c.atRest) return;
