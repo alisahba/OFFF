@@ -51,7 +51,7 @@ body {
     position: relative;
 }
 
-.cube {
+.slot {
     width: var(--s);
     height: var(--s);
     position: absolute;
@@ -59,10 +59,18 @@ body {
     transform-style: preserve-3d;
 }
 
-#cube1 { top: var(--margin); }
-#cube2 { top: calc(var(--margin) + 1 * (var(--s) + var(--gap))); }
-#cube3 { top: calc(var(--margin) + 2 * (var(--s) + var(--gap))); }
-#cube4 { top: calc(var(--margin) + 3 * (var(--s) + var(--gap))); }
+#slot1 { top: var(--margin); }
+#slot2 { top: calc(var(--margin) + 1 * (var(--s) + var(--gap))); }
+#slot3 { top: calc(var(--margin) + 2 * (var(--s) + var(--gap))); }
+#slot4 { top: calc(var(--margin) + 3 * (var(--s) + var(--gap))); }
+
+.cube {
+    width: var(--s);
+    height: var(--s);
+    position: absolute;
+    top: 0; left: 0;
+    transform-style: preserve-3d;
+}
 
 .face {
     position: absolute;
@@ -79,16 +87,13 @@ body {
     user-select: none;
 }
 
-/* 2 faces — 180° apart */
 .faces-2 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) * 0.04)); }
 .faces-2 .face:nth-child(2) { transform: rotateY(180deg) translateZ(calc(var(--s) * 0.04)); }
 
-/* 3 faces — 120° apart  |  inradius ≈ s * 0.289 */
 .faces-3 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) * 0.289)); }
 .faces-3 .face:nth-child(2) { transform: rotateY(120deg) translateZ(calc(var(--s) * 0.289)); }
 .faces-3 .face:nth-child(3) { transform: rotateY(240deg) translateZ(calc(var(--s) * 0.289)); }
 
-/* 4 faces — 90° apart  |  inradius = s / 2 */
 .faces-4 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) / 2)); }
 .faces-4 .face:nth-child(2) { transform: rotateY( 90deg) translateZ(calc(var(--s) / 2)); }
 .faces-4 .face:nth-child(3) { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
@@ -104,32 +109,56 @@ body {
 
 <div id="scene">
 
-    <!-- SEE (3 faces) — face1 rests as O -->
-    <div id="cube1" class="cube faces-3">
-        <div class="face">S</div>
-        <div class="face">E</div>
-        <div class="face">E</div>
+    <div class="slot" id="slot1">
+        <div class="cube faces-3" id="spin1">
+            <div class="face">S</div>
+            <div class="face">E</div>
+            <div class="face">E</div>
+        </div>
+        <div class="cube faces-3" id="rest1">
+            <div class="face">O</div>
+            <div class="face">E</div>
+            <div class="face">E</div>
+        </div>
     </div>
 
-    <!-- YOU (3 faces) — face1 rests as F -->
-    <div id="cube2" class="cube faces-3">
-        <div class="face">Y</div>
-        <div class="face">O</div>
-        <div class="face">U</div>
+    <div class="slot" id="slot2">
+        <div class="cube faces-3" id="spin2">
+            <div class="face">Y</div>
+            <div class="face">O</div>
+            <div class="face">U</div>
+        </div>
+        <div class="cube faces-3" id="rest2">
+            <div class="face">F</div>
+            <div class="face">O</div>
+            <div class="face">U</div>
+        </div>
     </div>
 
-    <!-- AT (2 faces) — face1 rests as F -->
-    <div id="cube3" class="cube faces-2">
-        <div class="face">A</div>
-        <div class="face">T</div>
+    <div class="slot" id="slot3">
+        <div class="cube faces-2" id="spin3">
+            <div class="face">A</div>
+            <div class="face">T</div>
+        </div>
+        <div class="cube faces-2" id="rest3">
+            <div class="face">F</div>
+            <div class="face">T</div>
+        </div>
     </div>
 
-    <!-- OFFF (4 faces) — face1 rests as F -->
-    <div id="cube4" class="cube faces-4">
-        <div class="face">O</div>
-        <div class="face">F</div>
-        <div class="face">F</div>
-        <div class="face">F</div>
+    <div class="slot" id="slot4">
+        <div class="cube faces-4" id="spin4">
+            <div class="face">O</div>
+            <div class="face">F</div>
+            <div class="face">F</div>
+            <div class="face">F</div>
+        </div>
+        <div class="cube faces-4" id="rest4">
+            <div class="face">F</div>
+            <div class="face">F</div>
+            <div class="face">F</div>
+            <div class="face">F</div>
+        </div>
     </div>
 
 </div>
@@ -139,24 +168,27 @@ const btn     = document.getElementById("start-btn");
 const startSc = document.getElementById("start-screen");
 const scene   = document.getElementById("scene");
 
-// lerp descends so cube1 (top) settles first, cube4 (bottom) last
+// lerp descends: cube1 settles first (top), cube4 last (bottom)
 const cubes = [
-    { id: "cube1", lerp: 0.075, step: 120, faceCount: 3, rest: "O", spin: "S" },
-    { id: "cube2", lerp: 0.060, step: 120, faceCount: 3, rest: "F", spin: "Y" },
-    { id: "cube3", lerp: 0.048, step: 180, faceCount: 2, rest: "F", spin: "A" },
-    { id: "cube4", lerp: 0.036, step:  90, faceCount: 4, rest: "F", spin: "O" },
-].map(c => ({
+    { lerp: 0.075, step: 120, faceCount: 3 },
+    { lerp: 0.060, step: 120, faceCount: 3 },
+    { lerp: 0.048, step: 180, faceCount: 2 },
+    { lerp: 0.036, step:  90, faceCount: 4 },
+].map((c, i) => ({
     ...c,
-    el:         document.getElementById(c.id),
-    rot:        0,
-    target:     0,
-    faceIndex:  0,
+    slot:      document.getElementById(`slot${i + 1}`),
+    spinCube:  document.getElementById(`spin${i + 1}`),
+    restCube:  document.getElementById(`rest${i + 1}`),
+    rot:       0,
+    target:    0,
+    faceIndex: 0,
+    atRest:    true,
+    returning: false,
 }));
 
-// cache face1 ref and set rest letter immediately
 cubes.forEach(c => {
-    c.face1 = c.el.querySelector(".face");
-    c.face1.textContent = c.rest;
+    c.spinCube.style.display = "none";
+    c.restCube.style.display = "block";
 });
 
 let gamma    = 0;
@@ -164,10 +196,26 @@ let lastMove = 0;
 const COOLDOWN  = 130;
 const THRESHOLD = 9;
 
+function showSpin(c) {
+    c.atRest    = false;
+    c.returning = false;
+    c.spinCube.style.display = "block";
+    c.restCube.style.display = "none";
+}
+
+function showRest(c) {
+    c.atRest    = true;
+    c.returning = false;
+    c.spinCube.style.display = "none";
+    c.restCube.style.display = "block";
+}
+
 function trigger(dir) {
     cubes.forEach(c => {
         c.faceIndex = ((c.faceIndex + dir) % c.faceCount + c.faceCount) % c.faceCount;
-        c.target += dir * c.step;
+        c.target   += dir * c.step;
+        c.returning = false;          // cancel any in-progress return
+        if (c.atRest) showSpin(c);
     });
     lastMove = Date.now();
 }
@@ -184,25 +232,41 @@ function updateTilt() {
 function loop() {
     updateTilt();
 
+    const idleMs = Date.now() - lastMove;
+
     cubes.forEach(c => {
         c.rot += (c.target - c.rot) * c.lerp;
-        c.el.style.transform = `translateX(-50%) rotateY(${c.rot}deg)`;
+        c.slot.style.transform = `translateX(-50%) rotateY(${c.rot}deg)`;
 
-        // face1 is visible when it faces the viewer (within ±90° of front)
-        const r = ((c.rot % 360) + 360) % 360;
-        const face1Visible = r < 90 || r > 270;
+        if (c.atRest) return;
 
-        // only swap text while face1 is hidden — so the correct letter
-        // is already in place by the time the face rotates into view
-        if (!face1Visible) {
-            c.face1.textContent = (c.faceIndex === 0) ? c.rest : c.spin;
+        const settled = Math.abs(c.rot - c.target) < 0.5;
+
+        // once this cube has settled and the user has been idle 200ms,
+        // send it back to the nearest home position (multiple of 360°)
+        if (!c.returning && settled && idleMs > 200) {
+            c.returning = true;
+            c.target    = Math.round(c.target / 360) * 360;
+        }
+
+        // while returning: swap to rest cube only when face1 is hidden
+        // if the cube reaches its target while face1 is still visible,
+        // extend by 360° and keep spinning until it passes through the hidden zone
+        if (c.returning) {
+            const r           = ((c.rot % 360) + 360) % 360;
+            const face1Hidden = r >= 90 && r <= 270;
+            if (face1Hidden) {
+                showRest(c);
+            } else if (Math.abs(c.rot - c.target) < 0.5) {
+                c.target += 360; // spin one more full turn
+            }
         }
     });
 
     requestAnimationFrame(loop);
 }
 
-// touch swipe
+// touch
 let touchStartX = 0;
 window.addEventListener("touchstart", e => {
     touchStartX = e.touches[0].clientX;
