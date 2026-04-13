@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I WILL BEBE ATAT OFF</title>
+<style>
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    overflow: hidden;
+    background: #000;
+    font-family: monospace;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* ── START SCREEN ─────────────────────────────── */
+
+#start-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    z-index: 10;
+}
+
+#start-btn {
+    padding: 16px 32px;
+    font-size: 18px;
+    font-family: inherit;
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* ── SCENE ────────────────────────────────────── */
+
+#scene {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    perspective: 1600px;
+    position: relative;
+}
+
+
+/* ── CUBES ────────────────────────────────────── */
+
+.cube {
+    --s: 220px;
+    width: var(--s);
+    height: var(--s);
+    position: absolute;
+    left: 50%;
+    transform-style: preserve-3d;
+}
+
+/* vertical stack — 5 cubes × 220px + 4 × 12px gap = 1148px total */
+/* center offset = 1148 / 2 = 574px */
+#cube1 { top: calc(50% - 574px); }
+#cube2 { top: calc(50% - 574px + 232px); }
+#cube3 { top: calc(50% - 574px + 464px); }
+#cube4 { top: calc(50% - 574px + 696px); }
+#cube5 { top: calc(50% - 574px + 928px); }
+
+/* ── FACES ────────────────────────────────────── */
+
+.face {
+    position: absolute;
+    width: var(--s);
+    height: var(--s);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 96px;
+    font-weight: bold;
+    color: #fff;
+    background: black;
+    user-select: none;
+}
+
+/* half of 220 = 110 */
+.front { transform: rotateY(  0deg) translateZ(110px); }
+.right { transform: rotateY( 90deg) translateZ(110px); }
+.back  { transform: rotateY(180deg) translateZ(110px); }
+.left  { transform: rotateY(-90deg) translateZ(110px); }
+
+
+</style>
+</head>
+<body>
+
+<!-- ── START ──────────────────────────────────── -->
+<div id="start-screen">
+    <button id="start-btn">Start</button>
+</div>
+
+<!-- ── SCENE ──────────────────────────────────── -->
+<div id="scene">
+
+    <!-- 1 · I I I I -->
+    <div id="cube1" class="cube">
+        <div class="face front">I</div>
+        <div class="face right">I</div>
+        <div class="face back">I</div>
+        <div class="face left">I</div>
+    </div>
+
+    <!-- 2 · W I L L -->
+    <div id="cube2" class="cube">
+        <div class="face front">W</div>
+        <div class="face right">I</div>
+        <div class="face back">L</div>
+        <div class="face left">L</div>
+    </div>
+
+    <!-- 3 · B E B E -->
+    <div id="cube3" class="cube">
+        <div class="face front">B</div>
+        <div class="face right">E</div>
+        <div class="face back">B</div>
+        <div class="face left">E</div>
+    </div>
+
+    <!-- 4 · A T A T -->
+    <div id="cube4" class="cube">
+        <div class="face front">A</div>
+        <div class="face right">T</div>
+        <div class="face back">A</div>
+        <div class="face left">T</div>
+    </div>
+
+    <!-- 5 · O F F F -->
+    <div id="cube5" class="cube">
+        <div class="face front">O</div>
+        <div class="face right">F</div>
+        <div class="face back">F</div>
+        <div class="face left">F</div>
+    </div>
+
+</div>
+
+
+<script>
+const btn     = document.getElementById("start-btn");
+const startSc = document.getElementById("start-screen");
+const scene   = document.getElementById("scene");
+
+const cubes = [
+    document.getElementById("cube1"),
+    document.getElementById("cube2"),
+    document.getElementById("cube3"),
+    document.getElementById("cube4"),
+    document.getElementById("cube5"),
+];
+
+// ── rotation state ───────────────────────────────
+let gamma       = 0;
+let currentStep = 0;
+let targetRot   = 0;
+let currentRot  = 0;
+let lastMove    = 0;
+
+const COOLDOWN  = 130;
+const THRESHOLD = 9;
+const LERP      = 0.07;
+
+function handleOrientation(e) {
+    gamma = e.gamma || 0;
+}
+
+function updateStep() {
+    const now = Date.now();
+    if (now - lastMove < COOLDOWN) return;
+
+    if (gamma > THRESHOLD) {
+        currentStep++;
+        lastMove = now;
+    } else if (gamma < -THRESHOLD) {
+        currentStep--;
+        lastMove = now;
+    }
+
+    targetRot = currentStep * 90;
+}
+
+function loop() {
+    updateStep();
+
+    currentRot += (targetRot - currentRot) * LERP;
+
+    const t = `translateX(-50%) rotateY(${currentRot}deg)`;
+    cubes.forEach(c => c.style.transform = t);
+
+    requestAnimationFrame(loop);
+}
+
+// ── keyboard fallback (for desktop testing) ──────
+window.addEventListener("keydown", e => {
+    if (!scene.style.display || scene.style.display === "none") return;
+    if (e.key === "ArrowRight") { gamma =  15; }
+    if (e.key === "ArrowLeft")  { gamma = -15; }
+});
+window.addEventListener("keyup", e => {
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") gamma = 0;
+});
+
+// ── start ────────────────────────────────────────
+btn.onclick = () => {
+    const go = () => {
+        startSc.style.display = "none";
+        scene.style.display = "block";
+        window.addEventListener("deviceorientation", handleOrientation);
+        loop();
+    };
+
+    if (typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function") {
+        DeviceOrientationEvent.requestPermission()
+            .then(res => { if (res === "granted") go(); })
+            .catch(() => go());
+    } else {
+        go();
+    }
+};
+</script>
+
+</body>
+</html>
