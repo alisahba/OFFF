@@ -195,8 +195,8 @@ cubes.forEach(c => {
 let tiltX    = 0;  // gravity along device X axis (m/s²) — short-side lean
 let beta     = 0;  // front-back tilt, used to gate upright detection
 let lastMove = 0;
-const THRESHOLD      = 1.0;  // min |tiltX| (m/s²) before rotation starts (~9° lean)
-const VELOCITY_SCALE = 4.0;  // rotation degrees per frame per m/s² of tiltX
+const THRESHOLD      = 0.8;  // min |tiltX| (m/s²) before rotation starts (~9° lean)
+const VELOCITY_SCALE = 6.0;  // rotation degrees per frame per m/s² of tiltX
 const UPRIGHT_MIN    = 50;   // beta (°) — phone must be this upright to react
 
 function showSpin(c) {
