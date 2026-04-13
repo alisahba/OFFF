@@ -195,7 +195,7 @@ cubes.forEach(c => {
 let gamma    = 0;
 let lastMove = 0;
 const THRESHOLD      = 9;    // min gamma (°) before rotation starts
-const VELOCITY_SCALE = 0.06; // degrees added to target per frame per degree of gamma
+const VELOCITY_SCALE = 0.25; // degrees added to target per frame per degree of gamma
 
 function showSpin(c) {
     c.leavingRest = false;
