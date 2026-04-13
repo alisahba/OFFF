@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>I WILL BEBE ATAT OFF</title>
+<title>SEE YOU AT OFFF</title>
 <style>
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --gap: 3px;
-    --s: calc((100vh - 4 * var(--gap)) / 5);
+    --margin: 4vh;
+    --gap: -4px;
+    --s: calc((100vh - 2 * var(--margin) - 3 * var(--gap)) / 4);
 }
 
 body {
@@ -64,11 +65,10 @@ body {
     transform-style: preserve-3d;
 }
 
-#cube1 { top: 0; }
-#cube2 { top: calc(1 * (var(--s) + var(--gap))); }
-#cube3 { top: calc(2 * (var(--s) + var(--gap))); }
-#cube4 { top: calc(3 * (var(--s) + var(--gap))); }
-#cube5 { top: calc(4 * (var(--s) + var(--gap))); }
+#cube1 { top: var(--margin); }
+#cube2 { top: calc(var(--margin) + 1 * (var(--s) + var(--gap))); }
+#cube3 { top: calc(var(--margin) + 2 * (var(--s) + var(--gap))); }
+#cube4 { top: calc(var(--margin) + 3 * (var(--s) + var(--gap))); }
 
 /* ── FACES ────────────────────────────────────── */
 
@@ -79,17 +79,38 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: calc(var(--s) * 0.52);
+    font-size: calc(var(--s) * 0.68);
     font-weight: bold;
     color: #fff;
     background: black;
     user-select: none;
 }
 
-.front { transform: rotateY(  0deg) translateZ(calc(var(--s) / 2)); }
-.right { transform: rotateY( 90deg) translateZ(calc(var(--s) / 2)); }
-.back  { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
-.left  { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+/* 2 faces — 180° apart, thin depth */
+/* inradius = s / (2 * tan(π/2)) → degenerate; use a small offset for visual depth */
+.faces-2 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) * 0.04)); }
+.faces-2 .face:nth-child(2) { transform: rotateY(180deg) translateZ(calc(var(--s) * 0.04)); }
+
+/* 3 faces — 120° apart */
+/* inradius = s / (2 * tan(60°)) ≈ s * 0.289 */
+.faces-3 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) * 0.289)); }
+.faces-3 .face:nth-child(2) { transform: rotateY(120deg) translateZ(calc(var(--s) * 0.289)); }
+.faces-3 .face:nth-child(3) { transform: rotateY(240deg) translateZ(calc(var(--s) * 0.289)); }
+
+/* 4 faces — 90° apart */
+/* inradius = s / 2 */
+.faces-4 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) / 2)); }
+.faces-4 .face:nth-child(2) { transform: rotateY( 90deg) translateZ(calc(var(--s) / 2)); }
+.faces-4 .face:nth-child(3) { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.faces-4 .face:nth-child(4) { transform: rotateY(270deg) translateZ(calc(var(--s) / 2)); }
+
+/* 5 faces — 72° apart */
+/* inradius = s / (2 * tan(36°)) ≈ s * 0.688 */
+.faces-5 .face:nth-child(1) { transform: rotateY(  0deg) translateZ(calc(var(--s) * 0.688)); }
+.faces-5 .face:nth-child(2) { transform: rotateY( 72deg) translateZ(calc(var(--s) * 0.688)); }
+.faces-5 .face:nth-child(3) { transform: rotateY(144deg) translateZ(calc(var(--s) * 0.688)); }
+.faces-5 .face:nth-child(4) { transform: rotateY(216deg) translateZ(calc(var(--s) * 0.688)); }
+.faces-5 .face:nth-child(5) { transform: rotateY(288deg) translateZ(calc(var(--s) * 0.688)); }
 
 </style>
 </head>
@@ -103,44 +124,32 @@ body {
 <!-- ── SCENE ──────────────────────────────────── -->
 <div id="scene">
 
-    <!-- 1 · I I I I -->
-    <div id="cube1" class="cube">
-        <div class="face front">I</div>
-        <div class="face right">I</div>
-        <div class="face back">I</div>
-        <div class="face left">I</div>
+    <!-- 1 · S E E  (3 faces, 120° step) -->
+    <div id="cube1" class="cube faces-3">
+        <div class="face">S</div>
+        <div class="face">E</div>
+        <div class="face">E</div>
     </div>
 
-    <!-- 2 · W I L L -->
-    <div id="cube2" class="cube">
-        <div class="face front">W</div>
-        <div class="face right">I</div>
-        <div class="face back">L</div>
-        <div class="face left">L</div>
+    <!-- 2 · Y O U  (3 faces, 120° step) -->
+    <div id="cube2" class="cube faces-3">
+        <div class="face">Y</div>
+        <div class="face">O</div>
+        <div class="face">U</div>
     </div>
 
-    <!-- 3 · B E B E -->
-    <div id="cube3" class="cube">
-        <div class="face front">B</div>
-        <div class="face right">E</div>
-        <div class="face back">B</div>
-        <div class="face left">E</div>
+    <!-- 3 · A T  (2 faces, 180° step) -->
+    <div id="cube3" class="cube faces-2">
+        <div class="face">A</div>
+        <div class="face">T</div>
     </div>
 
-    <!-- 4 · A T A T -->
-    <div id="cube4" class="cube">
-        <div class="face front">A</div>
-        <div class="face right">T</div>
-        <div class="face back">A</div>
-        <div class="face left">T</div>
-    </div>
-
-    <!-- 5 · O F F F -->
-    <div id="cube5" class="cube">
-        <div class="face front">O</div>
-        <div class="face right">F</div>
-        <div class="face back">F</div>
-        <div class="face left">F</div>
+    <!-- 4 · O F F F  (4 faces, 90° step) -->
+    <div id="cube4" class="cube faces-4">
+        <div class="face">O</div>
+        <div class="face">F</div>
+        <div class="face">F</div>
+        <div class="face">F</div>
     </div>
 
 </div>
@@ -150,54 +159,56 @@ const btn     = document.getElementById("start-btn");
 const startSc = document.getElementById("start-screen");
 const scene   = document.getElementById("scene");
 
-// each cube has its own lerp speed so they settle at different times
+// each cube: own lerp (settle speed) + own step angle (face count)
 const cubes = [
-    { el: document.getElementById("cube1"), lerp: 0.048, rot: 0 },
-    { el: document.getElementById("cube2"), lerp: 0.063, rot: 0 },
-    { el: document.getElementById("cube3"), lerp: 0.079, rot: 0 },
-    { el: document.getElementById("cube4"), lerp: 0.055, rot: 0 },
-    { el: document.getElementById("cube5"), lerp: 0.071, rot: 0 },
+    { el: document.getElementById("cube1"), lerp: 0.022, step: 120, rot: 0, target: 0 },
+    { el: document.getElementById("cube2"), lerp: 0.052, step: 120, rot: 0, target: 0 },
+    { el: document.getElementById("cube3"), lerp: 0.085, step: 180, rot: 0, target: 0 },
+    { el: document.getElementById("cube4"), lerp: 0.130, step:  90, rot: 0, target: 0 },
 ];
 
-let gamma       = 0;
-let currentStep = 0;
-let targetRot   = 0;
-let lastMove    = 0;
-
+let gamma    = 0;
+let lastMove = 0;
 const COOLDOWN  = 130;
 const THRESHOLD = 9;
+
+function trigger(dir) {
+    cubes.forEach(c => { c.target += dir * c.step; });
+    lastMove = Date.now();
+}
 
 function handleOrientation(e) {
     gamma = e.gamma || 0;
 }
 
-function updateStep() {
+function updateTilt() {
     const now = Date.now();
     if (now - lastMove < COOLDOWN) return;
-
-    if (gamma > THRESHOLD) {
-        currentStep++;
-        lastMove = now;
-    } else if (gamma < -THRESHOLD) {
-        currentStep--;
-        lastMove = now;
-    }
-
-    targetRot = currentStep * 90;
+    if      (gamma >  THRESHOLD) trigger( 1);
+    else if (gamma < -THRESHOLD) trigger(-1);
 }
 
 function loop() {
-    updateStep();
-
+    updateTilt();
     cubes.forEach(c => {
-        c.rot += (targetRot - c.rot) * c.lerp;
+        c.rot += (c.target - c.rot) * c.lerp;
         c.el.style.transform = `translateX(-50%) rotateY(${c.rot}deg)`;
     });
-
     requestAnimationFrame(loop);
 }
 
-// keyboard fallback for desktop testing
+// ── touch swipe ───────────────────────────────────
+let touchStartX = 0;
+window.addEventListener("touchstart", e => {
+    touchStartX = e.touches[0].clientX;
+}, { passive: true });
+window.addEventListener("touchend", e => {
+    if (scene.style.display === "none") return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) trigger(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+// ── keyboard fallback ─────────────────────────────
 window.addEventListener("keydown", e => {
     if (scene.style.display === "none") return;
     if (e.key === "ArrowRight") gamma =  15;
@@ -207,6 +218,7 @@ window.addEventListener("keyup", e => {
     if (e.key === "ArrowRight" || e.key === "ArrowLeft") gamma = 0;
 });
 
+// ── start ─────────────────────────────────────────
 btn.onclick = () => {
     const go = () => {
         startSc.style.display = "none";
@@ -214,7 +226,6 @@ btn.onclick = () => {
         window.addEventListener("deviceorientation", handleOrientation);
         loop();
     };
-
     if (typeof DeviceOrientationEvent !== "undefined" &&
         typeof DeviceOrientationEvent.requestPermission === "function") {
         DeviceOrientationEvent.requestPermission()
