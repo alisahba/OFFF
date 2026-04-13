@@ -195,8 +195,8 @@ cubes.forEach(c => {
 let gamma    = 0;
 let beta     = 0;
 let lastMove = 0;
-const THRESHOLD      = 5;    // min gamma (°) before rotation starts
-const VELOCITY_SCALE = 0.8;  // degrees added to target per frame per degree of gamma
+const THRESHOLD      = 7;    // min gamma (°) before rotation starts
+const VELOCITY_SCALE = 0.1;  // degrees added to target per frame per degree of gamma
 const UPRIGHT_MIN    = 50;   // beta (°) threshold — phone must be this upright to react
 
 function showSpin(c) {
