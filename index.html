@@ -192,12 +192,12 @@ cubes.forEach(c => {
     c.restCube.style.display = "block";
 });
 
-let gamma    = 0;
-let beta     = 0;
+let tiltX    = 0;  // gravity along device X axis (m/s²) — short-side lean
+let beta     = 0;  // front-back tilt, used to gate upright detection
 let lastMove = 0;
-const THRESHOLD      = 10;    // min gamma (°) before rotation starts
-const VELOCITY_SCALE = 0.3;  // degrees added to target per frame per degree of gamma
-const UPRIGHT_MIN    = 50;   // beta (°) threshold — phone must be this upright to react
+const THRESHOLD      = 1.5;  // min |tiltX| (m/s²) before rotation starts (~9° lean)
+const VELOCITY_SCALE = 2.0;  // rotation degrees per frame per m/s² of tiltX
+const UPRIGHT_MIN    = 50;   // beta (°) — phone must be this upright to react
 
 function showSpin(c) {
     c.leavingRest = false;
@@ -227,16 +227,20 @@ function trigger(dir) {
 }
 
 function handleOrientation(e) {
-    gamma = e.gamma || 0;
-    beta  = e.beta  || 0;
+    beta = e.beta || 0;
+}
+
+function handleMotion(e) {
+    if (e.accelerationIncludingGravity)
+        tiltX = e.accelerationIncludingGravity.x || 0;
 }
 
 function loop() {
-    // velocity-based rotation: only active when phone is held upright
+    // only active when phone is held upright (beta > UPRIGHT_MIN)
     const isUpright = Math.abs(beta) > UPRIGHT_MIN;
 
-    const deadband = isUpright && gamma > THRESHOLD  ? gamma - THRESHOLD
-                   : isUpright && gamma < -THRESHOLD ? gamma + THRESHOLD
+    const deadband = isUpright && tiltX >  THRESHOLD ?  tiltX - THRESHOLD
+                   : isUpright && tiltX < -THRESHOLD ?  tiltX + THRESHOLD
                    : 0;
 
     if (deadband !== 0) {
@@ -299,14 +303,14 @@ window.addEventListener("touchend", e => {
     if (Math.abs(dx) > 40) trigger(dx < 0 ? -1 : 1);
 }, { passive: true });
 
-// keyboard fallback
+// keyboard fallback — simulate ~18° lean + upright
 window.addEventListener("keydown", e => {
     if (scene.style.display === "none") return;
-    if (e.key === "ArrowRight") gamma =  15;
-    if (e.key === "ArrowLeft")  gamma = -15;
+    if (e.key === "ArrowRight") { tiltX = -3; beta = 90; }
+    if (e.key === "ArrowLeft")  { tiltX =  3; beta = 90; }
 });
 window.addEventListener("keyup", e => {
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") gamma = 0;
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") { tiltX = 0; beta = 0; }
 });
 
 btn.onclick = () => {
@@ -314,16 +318,21 @@ btn.onclick = () => {
         startSc.style.display = "none";
         scene.style.display = "block";
         window.addEventListener("deviceorientation", handleOrientation);
+        window.addEventListener("devicemotion", handleMotion);
         loop();
     };
-    if (typeof DeviceOrientationEvent !== "undefined" &&
-        typeof DeviceOrientationEvent.requestPermission === "function") {
-        DeviceOrientationEvent.requestPermission()
-            .then(res => { if (res === "granted") go(); })
-            .catch(() => go());
-    } else {
-        go();
-    }
+    // request both orientation (for beta) and motion (for tiltX) permissions on iOS
+    const reqOrientation = typeof DeviceOrientationEvent !== "undefined" &&
+                           typeof DeviceOrientationEvent.requestPermission === "function"
+        ? DeviceOrientationEvent.requestPermission()
+        : Promise.resolve("granted");
+    const reqMotion = typeof DeviceMotionEvent !== "undefined" &&
+                      typeof DeviceMotionEvent.requestPermission === "function"
+        ? DeviceMotionEvent.requestPermission()
+        : Promise.resolve("granted");
+    Promise.all([reqOrientation, reqMotion])
+        .then(() => go())
+        .catch(() => go());
 };
 </script>
 
