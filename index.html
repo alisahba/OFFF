@@ -176,14 +176,15 @@ const cubes = [
     { lerp: 0.036, step:  90, faceCount: 4 },
 ].map((c, i) => ({
     ...c,
-    slot:      document.getElementById(`slot${i + 1}`),
-    spinCube:  document.getElementById(`spin${i + 1}`),
-    restCube:  document.getElementById(`rest${i + 1}`),
-    rot:       0,
-    target:    0,
-    faceIndex: 0,
-    atRest:    true,
-    returning: false,
+    slot:         document.getElementById(`slot${i + 1}`),
+    spinCube:     document.getElementById(`spin${i + 1}`),
+    restCube:     document.getElementById(`rest${i + 1}`),
+    rot:          0,
+    target:       0,
+    faceIndex:    0,
+    atRest:       true,
+    returning:    false,
+    leavingRest:  false,   // true while departing rest before face1 is hidden
 }));
 
 cubes.forEach(c => {
@@ -197,15 +198,15 @@ const COOLDOWN  = 130;
 const THRESHOLD = 9;
 
 function showSpin(c) {
-    c.atRest    = false;
-    c.returning = false;
+    c.leavingRest = false;
     c.spinCube.style.display = "block";
     c.restCube.style.display = "none";
 }
 
 function showRest(c) {
-    c.atRest    = true;
-    c.returning = false;
+    c.atRest      = true;
+    c.returning   = false;
+    c.leavingRest = false;
     c.spinCube.style.display = "none";
     c.restCube.style.display = "block";
 }
@@ -214,8 +215,11 @@ function trigger(dir) {
     cubes.forEach(c => {
         c.faceIndex = ((c.faceIndex + dir) % c.faceCount + c.faceCount) % c.faceCount;
         c.target   += dir * c.step;
-        c.returning = false;          // cancel any in-progress return
-        if (c.atRest) showSpin(c);
+        c.returning = false;
+        if (c.atRest) {
+            c.atRest      = false;
+            c.leavingRest = true;   // keep rest cube visible until face1 is hidden
+        }
     });
     lastMove = Date.now();
 }
@@ -240,11 +244,19 @@ function loop() {
 
         if (c.atRest) return;
 
+        const r           = ((c.rot % 360) + 360) % 360;
+        const face1Hidden = r >= 90 && r <= 270;
+
+        // leaving rest: swap rest→spin once face1 rotates into the hidden zone
+        if (c.leavingRest && face1Hidden) {
+            showSpin(c);
+        }
+
         const settled = Math.abs(c.rot - c.target) < 0.5;
 
         // once this cube has settled and the user has been idle 200ms,
         // send it back to the nearest home position (multiple of 360°)
-        if (!c.returning && settled && idleMs > 200) {
+        if (!c.leavingRest && !c.returning && settled && idleMs > 200) {
             c.returning = true;
             c.target    = Math.round(c.target / 360) * 360;
         }
@@ -253,8 +265,6 @@ function loop() {
         // if the cube reaches its target while face1 is still visible,
         // extend by 360° and keep spinning until it passes through the hidden zone
         if (c.returning) {
-            const r           = ((c.rot % 360) + 360) % 360;
-            const face1Hidden = r >= 90 && r <= 270;
             if (face1Hidden) {
                 showRest(c);
             } else if (Math.abs(c.rot - c.target) < 0.5) {
