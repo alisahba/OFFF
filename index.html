@@ -193,9 +193,11 @@ cubes.forEach(c => {
 });
 
 let gamma    = 0;
+let beta     = 0;
 let lastMove = 0;
-const THRESHOLD      = 3;    // min gamma (°) before rotation starts
-const VELOCITY_SCALE = 2.0; // degrees added to target per frame per degree of gamma
+const THRESHOLD      = 5;    // min gamma (°) before rotation starts
+const VELOCITY_SCALE = 0.8;  // degrees added to target per frame per degree of gamma
+const UPRIGHT_MIN    = 50;   // beta (°) threshold — phone must be this upright to react
 
 function showSpin(c) {
     c.leavingRest = false;
@@ -224,12 +226,17 @@ function trigger(dir) {
     lastMove = Date.now();
 }
 
-function handleOrientation(e) { gamma = e.gamma || 0; }
+function handleOrientation(e) {
+    gamma = e.gamma || 0;
+    beta  = e.beta  || 0;
+}
 
 function loop() {
-    // velocity-based rotation: target advances proportionally to tilt angle
-    const deadband = gamma > THRESHOLD  ? gamma - THRESHOLD
-                   : gamma < -THRESHOLD ? gamma + THRESHOLD
+    // velocity-based rotation: only active when phone is held upright
+    const isUpright = Math.abs(beta) > UPRIGHT_MIN;
+
+    const deadband = isUpright && gamma > THRESHOLD  ? gamma - THRESHOLD
+                   : isUpright && gamma < -THRESHOLD ? gamma + THRESHOLD
                    : 0;
 
     if (deadband !== 0) {
